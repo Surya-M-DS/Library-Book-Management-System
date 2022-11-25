@@ -1,0 +1,153 @@
+from tkinter import *
+from tkinter import ttk
+import sqlite3
+
+root = Tk()
+
+root.title('A Library Application!')
+root.geometry('1350x800')
+root.resizable(False,False)
+
+#---------------------------------------------MAIN FUNCTIONS---------------------------------------------------
+
+#----------------displays all the deatils in the textbox------------------------------
+def display():
+    con = sqlite3.connect('library.db')
+    cur = con.cursor()
+    cur.execute("SELECT * FROM library")
+    data = cur.fetchall()
+    con.close()
+    textbox.insert(END,data)
+
+#---------------searches for the data based on book name------------------------------
+def search():
+    
+    def dummy(bn):
+        con = sqlite3.connect('library.db')
+        cur = con.cursor()
+        cur.execute("SELECT * FROM library where Booktitle=?",(bn,))
+        data = cur.fetchall()
+        con.close()
+        textbox.insert(END,data)
+        
+        booktitleentry.delete(0,END)
+    
+    dummy(booktitleentry.get())
+
+    
+#-----------------adds the book information---------------------------------------------
+def add():
+    bookname = booktitleentry.get()
+    authorname = authorentry.get()
+    yearnumber = yearentry.get()
+    isbnnumber = isbnentry.get()
+    
+    def create_table():
+        con = sqlite3.connect('library.db')
+        cur = con.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS library(Booktitle TEXT,Author TEXT,Year INT,ISBN INT)")
+        con.close()
+                    
+    create_table()
+                    
+    def insert_data(book,author,year,isbn):
+        con = sqlite3.connect('library.db')
+        cur = con.cursor()
+        cur.execute("INSERT INTO library values(?,?,?,?)",(book,author,year,isbn))
+        con.commit()
+        con.close()
+                    
+    insert_data(bookname,authorname,yearnumber,isbnnumber)
+    
+    booktitleentry.delete(0,END)
+    authorentry.delete(0,END)
+    yearentry.delete(0,END)
+    isbnentry.delete(0,END)
+
+    
+def issue():
+    statement = 'No issues found!'
+    textbox.insert(END,statement)
+    
+
+#---------------------deletes all the data in the textbox-------------------------------
+def delete():
+    textbox.delete('1.0',END)
+
+
+#------------------------------------------INSIDE TOP FRAME----------------------------------------------------
+
+topframe = Frame(root,bd=5,bg='blue')
+topframe.pack(fill=X)
+
+toplabel = Label(topframe,text=".....Library Management Application.....",font="cosmic 15 bold",relief='raised')
+toplabel.pack(fill=X)
+
+#-------------------------------------------INSIDE LEFT FRAME--------------------------------------------------
+
+leftframe = Frame(root,height=450,width=500,bg='red',relief='raised',bd=5)
+leftframe.pack(side=LEFT)
+
+#------------BOTTOM FRAME----------------------
+
+mainbottomframe = Frame(leftframe,width=600,height=70,relief='raised',bd=5)
+mainbottomframe.pack(side=BOTTOM,padx=5,pady=5)
+
+displaybutton = Button(mainbottomframe,text='Display',width=10,relief='raised',command=display)
+displaybutton.pack(side='left')
+
+searchbutton = Button(mainbottomframe,text='Search',width=10,relief='raised',command=search)
+searchbutton.pack(side='left')
+
+addbutton = Button(mainbottomframe,text='Add',width=10,relief='raised',command=add)
+addbutton.pack(side='left')
+
+issuebutton = Button(mainbottomframe,text='Issue',width=10,relief='raised',command=issue)
+issuebutton.pack(side='left')
+
+deletebutton = Button(mainbottomframe,text='Delete',width=10,relief='raised',command=delete)
+deletebutton.pack(side='left')
+
+exitbutton = Button(mainbottomframe,text='Exit',width=10,relief='raised',command=root.destroy)
+exitbutton.pack(side='left')
+
+
+#------------TOP FRAME-------------------------
+
+maintopframe = Frame(leftframe,height=400,width=475)
+maintopframe.pack(side=TOP,pady=5)
+
+booktitlelabel = Label(maintopframe,text='Booktitle :',font='cosmic 20')
+booktitlelabel.place(x=10,y=10)
+
+booktitleentry = Entry(maintopframe,width=30,font='20')
+booktitleentry.place(x=150,y=20)
+
+authorlabel = Label(maintopframe,text='Author :',font='cosmic 20')
+authorlabel.place(x=35,y=110)
+
+authorentry = Entry(maintopframe,width=30,font='20')
+authorentry.place(x=150,y=120)
+
+yearlabel = Label(maintopframe,text='Year :',font='cosmic 20')
+yearlabel.place(x=55,y=210)
+
+yearentry = Entry(maintopframe,width=30,font='20')
+yearentry.place(x=150,y=220)
+
+isbnlabel = Label(maintopframe,text='ISBN :',font='cosmic 20')
+isbnlabel.place(x=55,y=310)
+
+isbnentry = Entry(maintopframe,width=30,font='20')
+isbnentry.place(x=150,y=320)
+
+#-------------------------------------------INSIDE RIGHT FRAME-------------------------------------------------
+
+rightframe = Frame(root,height=400,bg='yellow',bd=5,relief='raised')
+rightframe.pack(side=RIGHT)
+
+#-------------TEXT WIGDET---------------------
+textbox = Text(rightframe,height=25,width=100)
+textbox.pack()
+
+root.mainloop()
